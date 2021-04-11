@@ -1,9 +1,16 @@
 package com.example.hiot_cloud.base;
 
+import android.app.Application;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.hiot_cloud.App;
+import com.example.hiot_cloud.injection.component.ActivityComponent;
+import com.example.hiot_cloud.injection.component.ApplicationComponent;
+import com.example.hiot_cloud.injection.component.DaggerActivityComponent;
+import com.example.hiot_cloud.injection.module.ActivityModule;
 
 /**
  * MVP架构Acivity基类
@@ -11,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 public abstract class BaseActivity<V extends  BaseView , P extends BasePresenter > extends AppCompatActivity implements BaseView {
 
     private P presenter;
+
+    private ActivityComponent mActivityComponent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,5 +49,32 @@ public abstract class BaseActivity<V extends  BaseView , P extends BasePresenter
     @Override
     protected void onStop() {
         super.onStop();
+    }
+
+
+
+
+    public ActivityComponent getActivityComponent() {
+        if (null == mActivityComponent) {
+            mActivityComponent = DaggerActivityComponent.builder()
+                    .activityModule(getActivityModule())
+                    .applicationComponent(getApplicationComponent())
+                    .build();
+        }
+        return mActivityComponent;
+    }
+
+    public ApplicationComponent getApplicationComponent() {
+
+        Application application = getApplication();
+        App app = (App) application;
+        return app.component();
+    }
+
+    /**
+     * Get an Activity module for dependency injection.
+     */
+    protected ActivityModule getActivityModule() {
+        return new ActivityModule(this);
     }
 }
